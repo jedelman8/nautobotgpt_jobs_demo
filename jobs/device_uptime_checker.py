@@ -1,4 +1,4 @@
-from nautobot.apps.jobs import Job, register_jobs, ObjectVar
+from nautobot.apps.jobs import Job, register_jobs, ObjectVar, IntegerVar
 from nautobot.dcim.models import Device, Location
 
 class DeviceUptimeCheck(Job):
