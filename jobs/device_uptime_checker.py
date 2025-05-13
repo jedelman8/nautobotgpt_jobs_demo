@@ -37,7 +37,7 @@ class DeviceUptimeCheck(Job):
                     device.name, uptime_days
                 )
             else:
-                self.log_success(
+                self.logger.success(
                     message=f"Device {device.name} has sufficient uptime of {uptime_days} days."
                 )
 
