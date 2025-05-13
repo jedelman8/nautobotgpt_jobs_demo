@@ -5,5 +5,5 @@ from .duplicate_ip_check import CheckDuplicateIPAddresses
 
 register_jobs(
 	HelloWorldJob,
-	CheckDuplicateIPAddresses
+	#CheckDuplicateIPAddresses
 	)
