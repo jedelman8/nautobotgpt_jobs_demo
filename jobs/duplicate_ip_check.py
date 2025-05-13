@@ -25,4 +25,4 @@ class CheckDuplicateIPAddresses(Job):
             if count > 1:
                 self.logger.warning("Duplicate IP found: %s (Count: %d)", ip, count)
 
-        self.logger.info(message="Check for duplicate IP addresses completed.")
+        self.logger.info("Check for duplicate IP addresses completed.")
