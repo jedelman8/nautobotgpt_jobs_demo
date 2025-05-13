@@ -1,7 +1,6 @@
-from nautobot.apps.jobs import Job, register_jobs
+from nautobot.apps.jobs import Job
 
 class HelloWorldJob(Job):
     def run(self):
         self.logger.info("Hello World!")
 
-register_jobs(HelloWorldJob)

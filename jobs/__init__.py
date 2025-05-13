@@ -1,5 +1,5 @@
 from nautobot.apps.jobs import register_jobs
-from .hello_jobs import HelloJobs
+from .HelloWorldJob import HelloWorldJob
 
 
-register_jobs(HelloJobs)
+register_jobs(HelloWorldJob)
