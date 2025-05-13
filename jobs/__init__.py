@@ -6,5 +6,6 @@ from .device_uptime_checker.py import DeviceUptimeCheck
 
 register_jobs(
 	HelloWorldJob,
-	#CheckDuplicateIPAddresses
+	CheckDuplicateIPAddresses,
+	DeviceUptimeCheck
 	)
