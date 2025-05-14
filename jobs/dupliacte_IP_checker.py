@@ -18,12 +18,19 @@ class CheckDuplicateIPAddresses(Job):
                 ip_map[key] = []
             ip_map[key].append(ip)
 
-        # Find all addresses with >1 instance
+        # Find addresses with >1 instance
         for address, ip_objs in ip_map.items():
             if len(ip_objs) > 1:
                 details = []
                 for ip_obj in ip_objs:
-                    assigned_obj = ip_obj.assigned_object  # Can be interface, VM interface, etc.
+                    # Find what object the IP address is assigned to
+                    assigned_obj = (
+                        ip_obj.interface or
+                        ip_obj.vm_interface or
+                        ip_obj.nat_inside or
+                        ip_obj.nat_outside or
+                        None
+                    )
                     details.append(
                         f"{ip_obj} (status: {ip_obj.status}, assigned to: {assigned_obj or 'Unassigned'})"
                     )
