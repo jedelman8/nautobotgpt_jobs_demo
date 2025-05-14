@@ -8,9 +8,9 @@ class FindDuplicateIPAddresses(Job):
         description = "Identify and export duplicate IP addresses from IPAM to a CSV file."
 
     def run(self):
-        # Gather all IP addresses, group by address
+        # Gather all IP addresses, group by address (no select_related needed)
         ip_map = {}
-        for ip in IPAddress.objects.all().select_related("assigned_object_type", "assigned_object_id"):
+        for ip in IPAddress.objects.all():
             ip_map.setdefault(str(ip.address), []).append(ip)
 
         # Identify duplicates
