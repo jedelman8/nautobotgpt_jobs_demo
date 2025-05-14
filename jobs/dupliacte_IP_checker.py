@@ -7,35 +7,26 @@ class CheckDuplicateIPAddresses(Job):
         description = "Identifies duplicate IP addresses in Nautobot IPAM."
 
     def run(self):
-        # Build a dict mapping IP addresses to their associated objects
         ip_map = {}
         duplicates = []
 
-        # Iterate over all IP addresses
+        # Build mapping of addresses to IP objects
         for ip in IPAddress.objects.all():
-            key = str(ip.address)
-            if key not in ip_map:
-                ip_map[key] = []
-            ip_map[key].append(ip)
+            address_key = str(ip.address)
+            ip_map.setdefault(address_key, []).append(ip)
 
-        # Find addresses with >1 instance
+        # Find duplicates
         for address, ip_objs in ip_map.items():
             if len(ip_objs) > 1:
                 details = []
                 for ip_obj in ip_objs:
-                    # Find what object the IP address is assigned to
-                    assigned_obj = (
-                        ip_obj.interface or
-                        ip_obj.vm_interface or
-                        ip_obj.nat_inside or
-                        ip_obj.nat_outside or
-                        None
-                    )
+                    # assigned_object is a GenericForeignKey (can be None)
+                    assigned_obj = getattr(ip_obj, "assigned_object", None)
                     details.append(
                         f"{ip_obj} (status: {ip_obj.status}, assigned to: {assigned_obj or 'Unassigned'})"
                     )
                 duplicates.append(
-                    f"Duplicate IP: {address} - {len(ip_objs)} instances:\n" + "\n".join(details)
+                    f"Duplicate IP: {address} ({len(ip_objs)} instances):\n" + "\n".join(details)
                 )
 
         if duplicates:
