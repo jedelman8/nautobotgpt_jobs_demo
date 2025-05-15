@@ -1,5 +1,6 @@
 from nautobot.apps.jobs import Job, register_jobs
 import csv
+import io
 from django.utils import timezone
 
 from nautobot.ipam.models import IPAddress
@@ -14,10 +15,9 @@ class CheckDuplicateIPAddresses(Job):
         description = "Check for duplicate IP addresses and output details to a CSV file."
 
     def run(self):
-        # Gather all IPAddresses, grouped by 'address' field
+        # Gather all IPAddresses, grouped by 'address'
         ip_map = {}
         for ip in IPAddress.objects.all().select_related("status", "tenant"):
-            # Use CIDR as key (address property yields IP/prefixlen)
             addr_str = str(ip.address)
             ip_map.setdefault(addr_str, []).append(ip)
 
@@ -28,10 +28,8 @@ class CheckDuplicateIPAddresses(Job):
             self.logger.info("No duplicate IP addresses found.")
             return "No duplicates found."
 
-        now = timezone.now().strftime("%Y%m%d_%H%M%S")
-        csv_filename = f"duplicate_ip_addresses_{now}.csv"
-        csv_file = self.create_file(csv_filename, mode="w", newline="")
-
+        # Use StringIO for in-memory CSV writing
+        output = io.StringIO()
         fieldnames = [
             "IP Address",
             "Status",
@@ -40,7 +38,7 @@ class CheckDuplicateIPAddresses(Job):
             "Tenant",
             "Description",
         ]
-        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
         writer.writeheader()
 
         for addr, ips in duplicates.items():
@@ -59,6 +57,13 @@ class CheckDuplicateIPAddresses(Job):
                 })
                 row_count += 1
 
-        csv_file.close()
+        # Write CSV data as bytes
+        csv_content = output.getvalue().encode("utf-8")
+        output.close()
+
+        now = timezone.now().strftime("%Y%m%d_%H%M%S")
+        csv_filename = f"duplicate_ip_addresses_{now}.csv"
+        self.create_file(csv_filename, csv_content)
+
         self.logger.info("Found %s duplicate IP addresses. Results written to %s", len(duplicates), csv_filename)
         return f"Found {len(duplicates)} duplicate IP addresses. Total rows exported: {row_count}. Download: {csv_filename}"
