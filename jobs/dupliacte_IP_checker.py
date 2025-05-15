@@ -63,5 +63,3 @@ class CheckDuplicateIPAddresses(Job):
 
         # Return a message indicating file is available
         return "Duplicate IP addresses written to duplicate_ips.csv in the job results."
-
-register_jobs()
