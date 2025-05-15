@@ -8,5 +8,6 @@ from .interface_description_search_alpha import InterfaceDescriptionSearch
 register_jobs(
 	HelloWorldJob,
 	DeviceUptimeCheck,
-	CheckDuplicateIPAddresses
+	CheckDuplicateIPAddresses,
+	InterfaceDescriptionSearch
 	)
