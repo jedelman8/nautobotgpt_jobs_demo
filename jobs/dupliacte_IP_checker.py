@@ -1,42 +1,62 @@
 from nautobot.apps.jobs import Job, register_jobs
-from nautobot.ipam.models import IPAddress
+from django.utils import timezone
 import csv
-import io
 
-class DuplicateIPCheckJob(Job):
+from nautobot.ipam.models import IPAddress
+
+class CheckDuplicateIPAddresses(Job):
+    """
+    Job to check for duplicate IP addresses in Nautobot IPAM, exporting results to a CSV file.
+    """
+
     class Meta:
-        name = "Duplicate IP Address Checker"
-        description = "Check for and list all duplicate IP addresses in IPAM, outputting results to a CSV file."
+        name = "Check Duplicate IP Addresses"
+        description = "Check for duplicate IP addresses and output details to a CSV file."
 
     def run(self):
-        # Collect all addresses
-        ip_addresses = IPAddress.objects.all().values_list("address", flat=True)
+        # Gather all IPAddresses, grouped by 'address' field
+        ip_map = {}
+        for ip in IPAddress.objects.all().select_related("status", "tenant", "assigned_object"):
+            ip_map.setdefault(str(ip.address), []).append(ip)
 
-        from collections import Counter
-        ip_count = Counter(ip_addresses)
-        duplicates = [ip for ip, count in ip_count.items() if count > 1]
+        duplicates = {addr: ips for addr, ips in ip_map.items() if len(ips) > 1}
+        row_count = 0
 
-        output_rows = []
-        # Gather details about each instance of the duplicate
-        for dup_ip in duplicates:
-            ip_objs = IPAddress.objects.filter(address=dup_ip)
-            for ip_obj in ip_objs:
-                output_rows.append([
-                    ip_obj.address,
-                    ip_obj.status,
-                    str(ip_obj.assigned_object) if ip_obj.assigned_object else "",
-                    ip_obj.description or "",
-                ])
+        if not duplicates:
+            self.logger.info("No duplicate IP addresses found.")
+            return "No duplicates found."
 
-        # Create the CSV file
-        output = io.StringIO()
-        writer = csv.writer(output)
-        writer.writerow(["IP Address", "Status", "Assigned Object", "Description"])
-        for row in output_rows:
-            writer.writerow(row)
+        # CSV file setup
+        now = timezone.now().strftime("%Y%m%d_%H%M%S")
+        csv_filename = f"duplicate_ip_addresses_{now}.csv"
+        csv_file = self.create_file(csv_filename, mode="w", newline="")
 
-        csv_bytes = io.BytesIO(output.getvalue().encode("utf-8"))
-        self.create_file("duplicate-ips.csv", csv_bytes)
+        fieldnames = [
+            "IP Address",
+            "Status",
+            "Assigned Object Type",
+            "Assigned Object Name",
+            "Tenant",
+            "Description",
+        ]
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+        writer.writeheader()
 
-        self.logger.info("Detected %s duplicate IPs.", len(duplicates))
-        return f"Duplicate IP Address check completed. {len(duplicates)} unique duplicate IP addresses found. Results written to duplicate-ips.csv."
+        # Write the details for each duplicate
+        for addr, ips in duplicates.items():
+            for ip in ips:
+                assigned_type = getattr(ip.assigned_object_type, "model", "") if ip.assigned_object_type else ""
+                assigned_name = str(ip.assigned_object) if ip.assigned_object else ""
+                writer.writerow({
+                    "IP Address": str(ip.address),
+                    "Status": str(ip.status),
+                    "Assigned Object Type": assigned_type,
+                    "Assigned Object Name": assigned_name,
+                    "Tenant": str(ip.tenant) if ip.tenant else "",
+                    "Description": ip.description or "",
+                })
+                row_count += 1
+
+        csv_file.close()
+        self.logger.info("Found %s duplicate IP addresses. Results written to %s", len(duplicates), csv_filename)
+        return f"Found {len(duplicates)} duplicate IP addresses. Total rows exported: {row_count}. Download: {csv_filename}"
