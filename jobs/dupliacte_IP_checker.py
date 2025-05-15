@@ -1,65 +1,42 @@
 from nautobot.apps.jobs import Job, register_jobs
 from nautobot.ipam.models import IPAddress
 import csv
+import io
 
-class CheckDuplicateIPAddresses(Job):
-    """
-    Job to check for duplicate IP addresses in Nautobot IPAM and output to a CSV file.
-    """
-
+class DuplicateIPCheckJob(Job):
     class Meta:
-        name = "Check Duplicate IP Addresses"
-        description = "Scans for duplicate IP addresses in IPAM and outputs results as a CSV."
+        name = "Duplicate IP Address Checker"
+        description = "Check for and list all duplicate IP addresses in IPAM, outputting results to a CSV file."
 
     def run(self):
-        self.logger.info("Starting scan for duplicate IP addresses.")
+        # Collect all addresses
+        ip_addresses = IPAddress.objects.all().values_list("address", flat=True)
 
-        # Find duplicates using a values() + annotate/count() aggregation
-        ip_counts = (
-            IPAddress.objects.values("address")
-            .order_by("address")
-            .annotate(count_ip=models.Count("id"))
-            .filter(count_ip__gt=1)
-        )
-        duplicate_addrs = set([item['address'] for item in ip_counts])
+        from collections import Counter
+        ip_count = Counter(ip_addresses)
+        duplicates = [ip for ip, count in ip_count.items() if count > 1]
 
-        if not duplicate_addrs:
-            self.logger.info("No duplicate IP addresses found.")
-            return "No duplicate IP addresses found."
+        output_rows = []
+        # Gather details about each instance of the duplicate
+        for dup_ip in duplicates:
+            ip_objs = IPAddress.objects.filter(address=dup_ip)
+            for ip_obj in ip_objs:
+                output_rows.append([
+                    ip_obj.address,
+                    ip_obj.status,
+                    str(ip_obj.assigned_object) if ip_obj.assigned_object else "",
+                    ip_obj.description or "",
+                ])
 
-        self.logger.info("Found %s duplicate addresses. Gathering details...", len(duplicate_addrs))
+        # Create the CSV file
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(["IP Address", "Status", "Assigned Object", "Description"])
+        for row in output_rows:
+            writer.writerow(row)
 
-        # Get the details of all duplicate IPs
-        duplicate_ips = IPAddress.objects.filter(address__in=duplicate_addrs).order_by("address")
+        csv_bytes = io.BytesIO(output.getvalue().encode("utf-8"))
+        self.create_file("duplicate-ips.csv", csv_bytes)
 
-        # Create CSV file for output
-        headers = [
-            "Address",
-            "Status",
-            "Tenant",
-            "Assigned Object",
-            "Description",
-            "VRF",
-            "Role"
-        ]
-
-        file_handle = self.create_file("duplicate_ips.csv")
-        writer = csv.writer(file_handle)
-        writer.writerow(headers)
-
-        for ip in duplicate_ips:
-            writer.writerow([
-                ip.address,
-                ip.status.name if ip.status else "",
-                ip.tenant.name if ip.tenant else "",
-                str(ip.assigned_object) if ip.assigned_object else "",
-                ip.description,
-                ip.vrf.name if ip.vrf else "",
-                ip.role.name if ip.role else "",
-            ])
-
-        file_handle.close()
-        self.logger.info("CSV of duplicate IP addresses created.")
-
-        # Return a message indicating file is available
-        return "Duplicate IP addresses written to duplicate_ips.csv in the job results."
+        self.logger.info("Detected %s duplicate IPs.", len(duplicates))
+        return f"Duplicate IP Address check completed. {len(duplicates)} unique duplicate IP addresses found. Results written to duplicate-ips.csv."
