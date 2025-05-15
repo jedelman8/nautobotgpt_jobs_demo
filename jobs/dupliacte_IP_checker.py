@@ -1,52 +1,67 @@
 from nautobot.apps.jobs import Job, register_jobs
 from nautobot.ipam.models import IPAddress
 import csv
-import io
 
-class FindDuplicateIPAddresses(Job):
+class CheckDuplicateIPAddresses(Job):
+    """
+    Job to check for duplicate IP addresses in Nautobot IPAM and output to a CSV file.
+    """
+
     class Meta:
-        name = "Find Duplicate IP Addresses"
-        description = "Identify and export duplicate IP addresses from IPAM to a CSV file."
+        name = "Check Duplicate IP Addresses"
+        description = "Scans for duplicate IP addresses in IPAM and outputs results as a CSV."
 
     def run(self):
-        ip_map = {}
-        for ip in IPAddress.objects.all():
-            ip_map.setdefault(str(ip.address), []).append(ip)
+        self.logger.info("Starting scan for duplicate IP addresses.")
 
-        duplicates = {k: v for k, v in ip_map.items() if len(v) > 1}
+        # Find duplicates using a values() + annotate/count() aggregation
+        ip_counts = (
+            IPAddress.objects.values("address")
+            .order_by("address")
+            .annotate(count_ip=models.Count("id"))
+            .filter(count_ip__gt=1)
+        )
+        duplicate_addrs = set([item['address'] for item in ip_counts])
 
-        if not duplicates:
+        if not duplicate_addrs:
             self.logger.info("No duplicate IP addresses found.")
-            return "No duplicates found."
+            return "No duplicate IP addresses found."
 
-        output = io.StringIO()
-        csv_headers = ["IP Address", "Assigned Object Type", "Assigned Object Name", "Assigned Object ID"]
-        writer = csv.writer(output)
-        writer.writerow(csv_headers)
+        self.logger.info("Found %s duplicate addresses. Gathering details...", len(duplicate_addrs))
 
-        for ip_addr, ip_objs in duplicates.items():
-            for ip in ip_objs:
-                # Check assignment type
-                assigned_obj = None
-                obj_type = "Unassigned"
-                obj_name = ""
-                obj_id = ""
-                if hasattr(ip, "interface") and ip.interface:
-                    assigned_obj = ip.interface
-                elif hasattr(ip, "vm_interface") and ip.vm_interface:
-                    assigned_obj = ip.vm_interface
+        # Get the details of all duplicate IPs
+        duplicate_ips = IPAddress.objects.filter(address__in=duplicate_addrs).order_by("address")
 
-                if assigned_obj:
-                    obj_type = assigned_obj._meta.verbose_name.title()
-                    obj_name = str(assigned_obj)
-                    obj_id = str(assigned_obj.pk)
+        # Create CSV file for output
+        headers = [
+            "Address",
+            "Status",
+            "Tenant",
+            "Assigned Object",
+            "Description",
+            "VRF",
+            "Role"
+        ]
 
-                writer.writerow([ip_addr, obj_type, obj_name, obj_id])
+        file_handle = self.create_file("duplicate_ips.csv")
+        writer = csv.writer(file_handle)
+        writer.writerow(headers)
 
-        csv_content = output.getvalue()
-        output.close()
+        for ip in duplicate_ips:
+            writer.writerow([
+                ip.address,
+                ip.status.name if ip.status else "",
+                ip.tenant.name if ip.tenant else "",
+                str(ip.assigned_object) if ip.assigned_object else "",
+                ip.description,
+                ip.vrf.name if ip.vrf else "",
+                ip.role.name if ip.role else "",
+            ])
 
-        self.create_file("duplicate_ip_addresses.csv", csv_content)
+        file_handle.close()
+        self.logger.info("CSV of duplicate IP addresses created.")
 
-        self.logger.info("Duplicate IP addresses written to duplicate_ip_addresses.csv")
-        return "Duplicate IP addresses written to duplicate_ip_addresses.csv"
+        # Return a message indicating file is available
+        return "Duplicate IP addresses written to duplicate_ips.csv in the job results."
+
+register_jobs()
