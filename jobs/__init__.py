@@ -3,7 +3,7 @@ from .hello_world import HelloWorldJob
 from .device_uptime_checker import DeviceUptimeCheck
 from .dupliacte_IP_checker import CheckDuplicateIPAddresses
 from .interface_description_search_alpha import InterfaceDescriptionSearch
-from ipv4_check import DevicesRequirePrimaryIPv4
+from .ipv4_check import DevicesRequirePrimaryIPv4
 
 register_jobs(
 	HelloWorldJob,
