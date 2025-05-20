@@ -3,11 +3,13 @@ from .hello_world import HelloWorldJob
 from .device_uptime_checker import DeviceUptimeCheck
 from .dupliacte_IP_checker import CheckDuplicateIPAddresses
 from .interface_description_search_alpha import InterfaceDescriptionSearch
+from .update_interface_descriptions.py import UpdateInterfaceDescriptionsJob
 
 
 register_jobs(
 	HelloWorldJob,
 	DeviceUptimeCheck,
 	CheckDuplicateIPAddresses,
-	InterfaceDescriptionSearch
+	InterfaceDescriptionSearch,
+	UpdateInterfaceDescriptionsJob
 	)
