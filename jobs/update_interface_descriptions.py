@@ -30,7 +30,7 @@ class InterfaceDescriptionUpdater(Job):
     )
 
     class Meta:
-        name = "Update Interface Descriptions"
+        name = "Update Interface(s) Descriptions"
         description = "Update descriptions for selected interfaces with filtering."
 
     def run(self, location, device, interfaces, description, **kwargs):
