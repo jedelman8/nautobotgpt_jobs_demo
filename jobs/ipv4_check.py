@@ -1,7 +1,8 @@
 from nautobot.apps.jobs import Job, register_jobs, ObjectVar
-from nautobot.dcim.models import Device, Interface
+from nautobot.dcim.models import Device
 from nautobot.dcim.models import Location
 import csv
+import io
 
 class DevicesPrimaryIPv4Report(Job):
     """
@@ -22,8 +23,6 @@ class DevicesPrimaryIPv4Report(Job):
     def run(self, location):
         devices = Device.objects.filter(location=location)
         missing = []
-
-        # Prepare CSV file
         csv_rows = [("Device Name", "Primary IPv4 Address")]
 
         for device in devices:
@@ -35,11 +34,15 @@ class DevicesPrimaryIPv4Report(Job):
                 self.logger.success("Device %s has primary IPv4: %s.", device.name, primary_ip4)
             csv_rows.append((device.name, primary_ip4))
 
-        # Write the CSV report using the built-in method
-        csvfile = self.create_file("primary_ipv4_audit.csv")
-        writer = csv.writer(csvfile)
+        # Build CSV data as a string
+        csv_buffer = io.StringIO()
+        writer = csv.writer(csv_buffer)
         writer.writerows(csv_rows)
-        csvfile.close()  # Be sure to close after writing!
+        csv_content = csv_buffer.getvalue()
+        csv_buffer.close()
+
+        # Pass CSV content and filename to create_file
+        self.create_file(csv_content, filename="primary_ipv4_audit.csv")
 
         if not missing:
             self.logger.success("All devices in location %s have a primary IPv4.", location.name)
