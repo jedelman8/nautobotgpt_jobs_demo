@@ -1,33 +1,52 @@
-from nautobot.apps.jobs import Job, ObjectVar, register_jobs
-from nautobot.dcim.models import Device, Location
+from nautobot.apps.jobs import Job, register_jobs, ObjectVar
+from nautobot.dcim.models import Device, Interface
+from nautobot.dcim.models import Location
+import csv
 
-class DevicesRequirePrimaryIPv4(Job):
-    """Ensure all Devices at a Location have a primary IPv4 Address."""
+class DevicesPrimaryIPv4Report(Job):
+    """
+    Ensure that all devices at a selected Location have a primary IPv4 address.
+    Generate a CSV report listing compliant and non-compliant devices.
+    """
 
     location = ObjectVar(
         model=Location,
         required=True,
-        description="Select the location to check devices."
+        description="Location to audit for primary IPv4 attribution.",
     )
 
     class Meta:
-        name = "Devices Require Primary IPv4"
-        description = "Ensures all devices at the selected location have a primary IPv4 address populated."
-        approval_required = False
+        name = "Devices Primary IPv4 Audit and Report"
+        description = "Checks all devices in a Location for a primary IPv4, reports, and outputs CSV."
 
-    def run(self, location, **kwargs):
-        missing = []
+    def run(self, location):
         devices = Device.objects.filter(location=location)
-        for device in devices:
-            if not device.primary_ip4:
-                missing.append(device.name)
-                self.logger.warning(
-                    "Device '%s' does not have a primary IPv4 address set.", device.name
-                )
-        if missing:
-            result = f"Devices missing a primary IPv4 address: {', '.join(missing)}"
-        else:
-            result = "All devices at this location have a primary IPv4 address."
-        return result
+        missing = []
 
-register_jobs(DevicesRequirePrimaryIPv4)
+        # Prepare CSV file
+        csv_rows = [("Device Name", "Primary IPv4 Address")]
+
+        for device in devices:
+            primary_ip4 = device.primary_ip4.address if device.primary_ip4 else ""
+            if not primary_ip4:
+                self.logger.warning("Device %s is missing a primary IPv4 address.", device.name)
+                missing.append(device.name)
+            else:
+                self.logger.success("Device %s has primary IPv4: %s.", device.name, primary_ip4)
+            csv_rows.append((device.name, primary_ip4))
+
+        # Write the CSV report using the built-in method
+        csvfile = self.create_file("primary_ipv4_audit.csv")
+        writer = csv.writer(csvfile)
+        writer.writerows(csv_rows)
+        csvfile.close()  # Be sure to close after writing!
+
+        if not missing:
+            self.logger.success("All devices in location %s have a primary IPv4.", location.name)
+            result_msg = "All devices compliant."
+        else:
+            result_msg = f"Devices missing primary IPv4: {', '.join(missing)}"
+
+        return f"{result_msg}\nCSV report generated: primary_ipv4_audit.csv"
+
+register_jobs(DevicesPrimaryIPv4Report)
