@@ -1,6 +1,6 @@
 from nautobot.apps.jobs import Job, ObjectVar, register_jobs
 from nautobot.dcim.models import Device, Interface, Location
-from nautobot.extras.models import DeviceRole
+from nautobot.extras.models import Role
 
 class UnusedInterfacesReport(Job):
     """
@@ -20,7 +20,7 @@ class UnusedInterfacesReport(Job):
         required=True
     )
     role = ObjectVar(
-        model=DeviceRole,
+        model=Role,
         description="Device Role to filter devices.",
         required=True
     )
