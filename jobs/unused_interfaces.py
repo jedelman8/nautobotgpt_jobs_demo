@@ -11,6 +11,7 @@ class UnusedInterfacesReport(Job):
       - Not connected to a cable (no .cable or .connected_endpoint)
       - Not a member of a LAG (lag is None)
       - Not assigned any IP address
+      
     """
 
     location = ObjectVar(
