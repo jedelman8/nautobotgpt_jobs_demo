@@ -1,5 +1,6 @@
 from nautobot.apps.jobs import Job, ObjectVar, register_jobs
-from nautobot.dcim.models import Device, DeviceRole, Interface, Location
+from nautobot.dcim.models import Device, Interface, Location
+from nautobot.extras.models import DeviceRole
 
 class UnusedInterfacesReport(Job):
     """
