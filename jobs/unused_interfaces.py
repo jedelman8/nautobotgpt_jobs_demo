@@ -3,16 +3,6 @@ from nautobot.dcim.models import Device, Interface, Location
 from nautobot.extras.models import Role
 
 class UnusedInterfacesReport(Job):
-    """
-    Generate a report of unused interfaces for all devices of a given
-    role within a specified location.
-
-    An "unused" interface is defined as:
-      - Not connected to a cable (no .cable or .connected_endpoint)
-      - Not a member of a LAG (lag is None)
-      - Not assigned any IP address
-      
-    """
 
     location = ObjectVar(
         model=Location,
