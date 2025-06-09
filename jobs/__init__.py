@@ -2,13 +2,13 @@ from nautobot.apps.jobs import register_jobs
 from .hello_world import HelloWorldJob
 from .device_uptime_checker import DeviceUptimeCheck
 from .interface_description_search_alpha import InterfaceDescriptionSearch
-from .ipv4_check import DevicesPrimaryIPv4Report
+from .ipv4_check_Clive import DevicesRequirePrimaryIPv4
 from .unused_interfaces import UnusedInterfacesReport
 
 register_jobs(
 	HelloWorldJob,
 	DeviceUptimeCheck,
 	InterfaceDescriptionSearch,
-	DevicesPrimaryIPv4Report, 
+	DevicesRequirePrimaryIPv4, 
 	UnusedInterfacesReport
 	)
