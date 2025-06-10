@@ -4,11 +4,13 @@ from .device_uptime_checker import DeviceUptimeCheck
 from .interface_description_search_alpha import InterfaceDescriptionSearch
 from .IPv4_check_Clive import DevicesRequirePrimaryIPv4
 from .unused_interfaces import UnusedInterfacesReport
+from .replace_mgmt_address import SubstituteIPWithMgmt
 
 register_jobs(
 	HelloWorldJob,
 	DeviceUptimeCheck,
 	InterfaceDescriptionSearch,
 	DevicesRequirePrimaryIPv4, 
-	UnusedInterfacesReport
+	UnusedInterfacesReport,
+	SubstituteIPWithMgmt
 	)
