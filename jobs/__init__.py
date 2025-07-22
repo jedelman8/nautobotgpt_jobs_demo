@@ -6,7 +6,7 @@ from .IPv4_check_Clive import DevicesRequirePrimaryIPv4
 from .unused_interfaces import UnusedInterfacesReport
 from .replace_mgmt_address import SubstituteIPWithMgmt
 from .object_interaction import UpdateDeviceSerial
-from .update_interface_description import UpdateInterfaceDescription
+from .update_interface_description import UpdateIntDescription
 
 register_jobs(
 	HelloWorldJob,
@@ -16,5 +16,5 @@ register_jobs(
 	UnusedInterfacesReport,
 	SubstituteIPWithMgmt,
 	UpdateDeviceSerial,
-	UpdateInterfaceDescription
+	UpdateIntDescription
 	)
