@@ -46,7 +46,7 @@ class UpdateIntDescription(Job):
             # Define the connection parameters for netmiko
             device_params = {
                 "device_type": "cisco_ios",
-                "host": str(device.primary_ip4.address),  # Assuming the primary IP is IPv4
+                "host": str(device.primary_ip4.address.ip),  # Assuming the primary IP is IPv4
                 "username": "webinar_user",  # Replace with your device's username
                 "password": "webinar_pass",  # Replace with your device's password
             }
