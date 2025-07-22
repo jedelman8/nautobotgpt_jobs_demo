@@ -5,6 +5,10 @@ from netmiko import ConnectHandler
 class UpdateIntDescription(Job):
     """Job to update the description of a selected interface on a device."""
 
+    #####################
+    #      FILTERS      #
+    #####################
+
     # Location filter to narrow down available devices
     device_location = ObjectVar(
         model=Location,
@@ -28,6 +32,10 @@ class UpdateIntDescription(Job):
             "device": "$device",
         }
     )
+    
+    #####################
+    #   END OF FILTERS  #
+    #####################
 
     # The new description text to apply to the interface
     new_description = StringVar(
