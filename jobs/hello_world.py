@@ -1,5 +1,7 @@
 from nautobot.apps.jobs import Job
 
+name = "Tutorial Jobs" 
+
 class HelloWorldJob(Job):
 
 	class Meta:
