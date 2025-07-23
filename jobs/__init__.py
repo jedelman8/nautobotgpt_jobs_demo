@@ -8,6 +8,8 @@ from .replace_mgmt_address import SubstituteIPWithMgmt
 from .object_interaction import UpdateDeviceSerial
 from .update_interface_description import UpdateIntDescription
 
+name = "Tutorial Jobs" 
+
 register_jobs(
 	HelloWorldJob,
 	DeviceUptimeCheck,
