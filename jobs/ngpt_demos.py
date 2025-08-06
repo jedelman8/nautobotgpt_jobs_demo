@@ -211,7 +211,9 @@ class DevicesRequirePrimaryIPv4(Job):
         for device in devices:
             if not device.primary_ip4:
                 missing.append(device.name)
-                self.logger.warning(f"Device {device.name} missing primary IPv4 management address.", extra={"object": device}
+                self.logger.warning(
+                    f"Device {device.name} missing primary IPv4 management address.",
+                    extra={"object": device},
                 )
         if not missing:
             self.logger.success("All devices have a primary IPv4 management address.")
@@ -252,10 +254,8 @@ class InterfaceDescriptionSearch(Job):
                 if search_string in interface.description:
                     # Log the found interface
                     self.logger.info(
-                        "Found match: Device: %s, Interface: %s, Description: %s",
-                        device.name,
-                        interface.name,
-                        interface.description,
+                        f"Found match: Device: {device.name}, Interface: {interface.name}, Description: {interface.description}",
+                        extra={"object": interface},
                     )
 
 
