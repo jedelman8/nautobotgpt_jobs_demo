@@ -248,13 +248,16 @@ class InterfaceDescriptionSearch(Job):
         self.logger.info(f"Searching for {search_string}")
 
         for device in devices:
-            self.logger.info(f"Analyzing... {device.name}")
+            self.logger.info(
+                f"Analyzing... {device.name}",
+                extra={"object": device},
+            )
             # Get interfaces for each device
             interfaces = Interface.objects.filter(device=device)
 
             for interface in interfaces:
                 # Check if the description contains the search string
-                self.logger.info(f"Comparing search string of {search_string} to interface {interface.name} description of {interface.description}")
+                # self.logger.info(f"Comparing search string of {search_string} to interface {interface.name} description of {interface.description}")
                 if search_string in (interface.description or ""):
                     # Log the found interface
                     self.logger.info(
