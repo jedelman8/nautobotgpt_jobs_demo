@@ -333,7 +333,7 @@ class RemediateVulnJob(Job):
         description = "Sets a Vulnerability's status to 'Remediated' if the associated device's Config compliance is 'Compliant'."
 
     def run(self):
-        NEEDS_REMEDIATION_STATUS = "Needs Remediation"
+        NEEDS_REMEDIATION_STATUS = "1bf26b2c-440a-4d9b-9eb0-06ed1518f4d4" # ""Needs Remediation"
         REMEDIATED_STATUS = "Remediated"
         HTTP_FEATURE_NAME = "http"
         COMPLIANT_STATUS = "Compliant"
@@ -343,7 +343,7 @@ class RemediateVulnJob(Job):
 
         for vuln in vulns:
             device = vuln.device  # Assuming ForeignKey to Device is `device`
-            self.logger.info("Device {device.name} has a vulnerability")
+            self.logger.info(f"Device {device.name} has a vulnerability")
             """
             # Query for the device's HTTP compliance
             http_compliance = ConfigCompliance.objects.filter(
