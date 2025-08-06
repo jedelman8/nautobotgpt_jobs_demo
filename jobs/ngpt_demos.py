@@ -212,7 +212,7 @@ class DevicesRequirePrimaryIPv4(Job):
             if not device.primary_ip4:
                 missing.append(device.name)
                 self.logger.warning(
-                    "Device %s missing primary IPv4 management address.", device.name
+                    "Device %s missing primary IPv4 management address.", device.name, obj=device
                 )
         if not missing:
             self.logger.success("All devices have a primary IPv4 management address.")
