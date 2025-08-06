@@ -338,7 +338,7 @@ class RemediateVulnJob(Job):
         HTTP_FEATURE_NAME = "http"
         COMPLIANT_STATUS = "Compliant"
 
-        vulns = Vulnerability.objects.filter(status=NEEDS_REMEDIATION_STATUS)
+        vulns = VulnerabilityLCM.objects.filter(status=NEEDS_REMEDIATION_STATUS)
         count = 0
 
         for vuln in vulns:
