@@ -254,6 +254,7 @@ class InterfaceDescriptionSearch(Job):
 
             for interface in interfaces:
                 # Check if the description contains the search string
+                self.logger.info(f"Comparing search string of {search_string} to interface {interface.name} description of {interface.description}")
                 if search_string in (interface.description or ""):
                     # Log the found interface
                     self.logger.info(
