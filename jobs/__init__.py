@@ -7,6 +7,7 @@ from .ngpt_demos import (
     UnusedInterfacesReport,
     UpdateDeviceSerial,
     DevicesRequirePrimaryIPv4,
+    RemediateVulnJob,
 )
 
 register_jobs(
@@ -17,4 +18,5 @@ register_jobs(
     UnusedInterfacesReport,
     UpdateDeviceSerial,
     UpdateIntDescription,
+    RemediateVulnJob,
 )

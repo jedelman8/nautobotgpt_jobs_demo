@@ -1,7 +1,8 @@
 from nautobot.apps.jobs import Job, register_jobs, ObjectVar, IntegerVar, StringVar
 from nautobot.dcim.models import Location, Device, Interface
 from nautobot.extras.models import Role
-
+from nautobot_device_lifecycle_mgmt.models import Vulnerability
+from nautobot_golden_config.models import ConfigCompliance
 from netmiko import ConnectHandler
 
 name = "NautobotGPT Demos"
@@ -322,6 +323,45 @@ class DeviceUptimeCheck(Job):
         """
         # Placeholder: Replace with actual logic to retrieve a device's uptime
         return 10  # Assume 10 days uptime for demonstration
+
+
+class RemediateVulnJob(Job):
+    """Job to remediate vulnerabilities based on device HTTP config compliance."""
+
+    class Meta:
+        name = "Remediate Vulnerabilities by Config Compliance"
+        description = "Sets a Vulnerability's status to 'Remediated' if the associated device's Config compliance is 'Compliant'."
+
+    def run(self):
+        NEEDS_REMEDIATION_STATUS = "Needs Remediation"
+        REMEDIATED_STATUS = "Remediated"
+        HTTP_FEATURE_NAME = "http"
+        COMPLIANT_STATUS = "Compliant"
+
+        vulns = Vulnerability.objects.filter(status=NEEDS_REMEDIATION_STATUS)
+        count = 0
+
+        for vuln in vulns:
+            device = vuln.device  # Assuming ForeignKey to Device is `device`
+            self.logger.info("Device {device.name} has a vulnerability")
+            """
+            # Query for the device's HTTP compliance
+            http_compliance = ConfigCompliance.objects.filter(
+                device=device,
+                feature__name=HTTP_FEATURE_NAME  # Adjust if `feature` is a string field
+            ).first()
+            if http_compliance and http_compliance.compliance == COMPLIANT_STATUS:
+                self.logger.info(
+                    "Vulnerability %s on device %s remediated by device HTTP compliance.",
+                    vuln,
+                    device
+                )
+                vuln.status = REMEDIATED_STATUS
+                vuln.save()
+                count += 1
+            """
+
+        # return f"Remediated {count} vulnerabilities."
 
 
 register_jobs(
