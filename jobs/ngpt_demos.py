@@ -1,7 +1,7 @@
 from nautobot.apps.jobs import Job, register_jobs, ObjectVar, IntegerVar, StringVar
 from nautobot.dcim.models import Location, Device, Interface
 from nautobot.extras.models import Role
-from nautobot_device_lifecycle_mgmt.models import Vulnerability
+from nautobot_device_lifecycle_mgmt.models import VulnerabilityLCM
 from nautobot_golden_config.models import ConfigCompliance
 from netmiko import ConnectHandler
 
