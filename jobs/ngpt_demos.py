@@ -245,6 +245,8 @@ class InterfaceDescriptionSearch(Job):
             self.logger.warning("No devices found in the specified location.")
             return
 
+        self.logger.info(f"Searching for {search_string}")
+
         for device in devices:
             # Get interfaces for each device
             interfaces = Interface.objects.filter(device=device)
