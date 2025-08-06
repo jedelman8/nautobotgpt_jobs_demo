@@ -343,13 +343,15 @@ class RemediateVulnJob(Job):
 
         for vuln in vulns:
             device = vuln.device  # Assuming ForeignKey to Device is `device`
-            self.logger.info(f"Device {device.name} has a vulnerability")
-            """
+            self.logger.info(f"Device {device.name} has a vulnerability", extra={"object": vuln})
+            
             # Query for the device's HTTP compliance
             http_compliance = ConfigCompliance.objects.filter(
                 device=device,
                 feature__name=HTTP_FEATURE_NAME  # Adjust if `feature` is a string field
             ).first()
+            self.logger.info(f"Compliance Status is {http_compliance.compliance}")
+            """
             if http_compliance and http_compliance.compliance == COMPLIANT_STATUS:
                 self.logger.info(
                     "Vulnerability %s on device %s remediated by device HTTP compliance.",
