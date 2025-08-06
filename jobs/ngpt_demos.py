@@ -1,5 +1,7 @@
 from nautobot.apps.jobs import Job, register_jobs, ObjectVar, IntegerVar, StringVar
 from nautobot.dcim.models import Location, Device, Interface
+from nautobot.extras.models import Role
+
 from netmiko import ConnectHandler
 
 name = "NautobotGPT Demos"
