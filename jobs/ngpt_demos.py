@@ -1,4 +1,4 @@
-from nautobot.apps.jobs import Job, register_jobs, ObjectVar, IntegerVar
+from nautobot.apps.jobs import Job, register_jobs, ObjectVar, IntegerVar, StringVar
 from nautobot.dcim.models import Location, Device, Interface
 from netmiko import ConnectHandler
 
