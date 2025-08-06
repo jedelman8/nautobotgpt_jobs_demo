@@ -248,6 +248,7 @@ class InterfaceDescriptionSearch(Job):
         self.logger.info(f"Searching for {search_string}")
 
         for device in devices:
+            self.logger.info(f"Analyzing... {device.name}")
             # Get interfaces for each device
             interfaces = Interface.objects.filter(device=device)
 
