@@ -251,7 +251,7 @@ class InterfaceDescriptionSearch(Job):
 
             for interface in interfaces:
                 # Check if the description contains the search string
-                if search_string in interface.description:
+                if search_string in (interface.description or ""):
                     # Log the found interface
                     self.logger.info(
                         f"Found match: Device: {device.name}, Interface: {interface.name}, Description: {interface.description}",
