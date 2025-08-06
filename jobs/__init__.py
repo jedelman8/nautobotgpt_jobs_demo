@@ -15,7 +15,6 @@ register_jobs(
     InterfaceDescriptionSearch,
     DevicesRequirePrimaryIPv4,
     UnusedInterfacesReport,
-    SubstituteIPWithMgmt,
     UpdateDeviceSerial,
     UpdateIntDescription,
 )
